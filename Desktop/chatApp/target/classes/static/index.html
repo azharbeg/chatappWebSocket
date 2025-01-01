@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+</head>
+<body>
+<h2>WebSocket Chat</h2>
+<div>
+    <input type="text" id="message" placeholder="Type your message">
+    <button onclick="sendMessage()">Send</button>
+</div>
+<div id="messages"></div>
+
+<script>
+    let stompClient;
+
+    function connect() {
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function () {
+            console.log('Connected');
+            stompClient.subscribe('/topic/messages', function (messageOutput) {
+                showMessage(JSON.parse(messageOutput.body));
+            });
+        });
+    }
+
+    function sendMessage() {
+        const message = document.getElementById('message').value;
+        stompClient.send("/app/chat", {}, JSON.stringify({
+            sender: "User1",
+            content: message
+        }));
+    }
+
+    function showMessage(message) {
+        const messagesDiv = document.getElementById('messages');
+        const messageElement = document.createElement('p');
+        messageElement.textContent = `${message.sender}: ${message.content}`;
+        messagesDiv.appendChild(messageElement);
+    }
+
+    connect();
+</script>
+</body>
+</html>
+
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>WebSocket Chat</title>-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>-->
+<!--    <style>-->
+<!--        body {-->
+<!--            font-family: Arial, sans-serif;-->
+<!--            margin: 20px;-->
+<!--        }-->
+<!--        h2 {-->
+<!--            color: #333;-->
+<!--        }-->
+<!--        #messages {-->
+<!--            border: 1px solid #ccc;-->
+<!--            padding: 10px;-->
+<!--            margin-top: 10px;-->
+<!--            height: 300px;-->
+<!--            overflow-y: auto;-->
+<!--            background-color: #f9f9f9;-->
+<!--        }-->
+<!--        #messages p {-->
+<!--            margin: 0;-->
+<!--            padding: 5px;-->
+<!--        }-->
+<!--        input {-->
+<!--            padding: 5px;-->
+<!--            margin-right: 5px;-->
+<!--            width: 300px;-->
+<!--        }-->
+<!--        button {-->
+<!--            padding: 5px 10px;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h2>WebSocket Chat</h2>-->
+<!--<div>-->
+<!--    <input type="text" id="message" placeholder="Type your message">-->
+<!--    <button onclick="sendMessage()">Send</button>-->
+<!--</div>-->
+<!--<div id="messages"></div>-->
+
+<!--<script>-->
+<!--    let stompClient;-->
+
+<!--    function connect() {-->
+<!--       // const socket = new SockJS('/ws');-->
+<!--       // const socket = new WebSocket("ws://localhost:8080/ws"); // Update the URL here-->
+<!--        const socket = new SockJS("http://localhost:8080/ws"); // Update the URL here-->
+
+
+<!--        stompClient = Stomp.over(socket);-->
+
+<!--        // Optional: Disable debug logging-->
+<!--        stompClient.debug = null;-->
+
+<!--        stompClient.connect({}, function () {-->
+<!--            console.log('Connected to WebSocket');-->
+<!--            stompClient.subscribe('/topic/messages', function (messageOutput) {-->
+<!--                showMessage(JSON.parse(messageOutput.body));-->
+<!--            });-->
+<!--        }, function (error) {-->
+<!--            console.error('Error connecting to WebSocket:', error);-->
+<!--            alert('Could not connect to WebSocket. Please try again later.');-->
+<!--        });-->
+<!--    }-->
+
+<!--    function sendMessage() {-->
+<!--        const messageInput = document.getElementById('message');-->
+<!--        const message = messageInput.value.trim();-->
+
+<!--        if (message === '') {-->
+<!--            alert('Message cannot be empty!');-->
+<!--            return;-->
+<!--        }-->
+
+<!--        stompClient.send("/app/chat", {}, JSON.stringify({-->
+<!--            sender: "User1",-->
+<!--            content: message-->
+<!--        }));-->
+<!--        messageInput.value = ''; // Clear input field after sending-->
+<!--    }-->
+
+<!--    function showMessage(message) {-->
+<!--        const messagesDiv = document.getElementById('messages');-->
+<!--        const messageElement = document.createElement('p');-->
+<!--        messageElement.textContent = `${message.sender}: ${message.content}`;-->
+<!--        messagesDiv.appendChild(messageElement);-->
+
+<!--        // Auto-scroll to the latest message-->
+<!--        messagesDiv.scrollTop = messagesDiv.scrollHeight;-->
+<!--    }-->
+
+<!--    // Close WebSocket on page unload-->
+<!--    window.addEventListener('beforeunload', function () {-->
+<!--        if (stompClient) {-->
+<!--            stompClient.disconnect();-->
+<!--            console.log('WebSocket connection closed');-->
+<!--        }-->
+<!--    });-->
+
+<!--    connect();-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
